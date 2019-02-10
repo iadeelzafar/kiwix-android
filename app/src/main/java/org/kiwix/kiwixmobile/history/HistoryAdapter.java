@@ -11,7 +11,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import java.time.LocalDate;
+import org.threeten.bp.LocalDate;
 import java.util.List;
 import org.kiwix.kiwixmobile.R;
 import org.kiwix.kiwixmobile.data.local.entity.History;
@@ -63,14 +63,13 @@ class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           itemClickListener.onItemLongClick(item.favicon, history));
     } else {
       String datestr = historyList.get(position + 1).getDate();
-      ((Category) holder).date.setText(datestr);
-      if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) {
-        LocalDate histdate = LocalDate.parse(datestr);
-        if (histdate.equals(LocalDate.now())) {
-          ((Category) holder).date.setText(R.string.time_today);
-        } else if (histdate.equals(LocalDate.now().minusDays(1))) {
-          ((Category) holder).date.setText(R.string.time_yesterday);
-        }
+      LocalDate histdate = LocalDate.parse(datestr);
+      if (histdate.equals(LocalDate.now())) {
+        ((Category) holder).date.setText(R.string.time_today);
+      } else if (histdate.equals(LocalDate.now().minusDays(1))) {
+        ((Category) holder).date.setText(R.string.time_yesterday);
+      } else {
+        ((Category) holder).date.setText(datestr);
       }
     }
   }

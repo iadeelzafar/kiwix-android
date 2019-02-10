@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import org.kiwix.kiwixmobile.di.components.ApplicationComponent;
 import org.kiwix.kiwixmobile.di.components.DaggerApplicationComponent;
 import org.kiwix.kiwixmobile.di.modules.ApplicationModule;
+import com.jakewharton.threetenabp.AndroidThreeTen;
 
 public class KiwixApplication extends MultiDexApplication implements HasActivityInjector {
 
@@ -71,6 +72,7 @@ public class KiwixApplication extends MultiDexApplication implements HasActivity
   @Override
   public void onCreate() {
     super.onCreate();
+    AndroidThreeTen.init(this);
     if (isExternalStorageWritable()) {
       File appDirectory = new File(Environment.getExternalStorageDirectory() + "/Kiwix");
       logFile = new File(appDirectory, "logcat.txt");
