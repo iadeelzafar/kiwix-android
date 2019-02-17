@@ -127,6 +127,8 @@ public final class Constants {
   // Notification Channel Constants
   public static final String ONGOING_DOWNLOAD_CHANNEL_ID = "ongoing_downloads_channel_id";
 
+  public static final String SUCCESSFUL_DOWNLOAD_CHANNEL_ID = "successful_downloads_channel_id";
+
   public static final String OLD_PROVIDER_DOMAIN = "org.kiwix.zim.base";
 
   public static final String NEW_PROVIDER_DOMAIN = BuildConfig.APPLICATION_ID + ".zim.base";

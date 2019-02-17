@@ -76,6 +76,7 @@ import static org.kiwix.kiwixmobile.utils.Constants.EXTRA_LIBRARY;
 import static org.kiwix.kiwixmobile.utils.Constants.EXTRA_NOTIFICATION_ID;
 import static org.kiwix.kiwixmobile.utils.Constants.EXTRA_ZIM_FILE;
 import static org.kiwix.kiwixmobile.utils.Constants.ONGOING_DOWNLOAD_CHANNEL_ID;
+import static org.kiwix.kiwixmobile.utils.Constants.SUCCESSFUL_DOWNLOAD_CHANNEL_ID;
 import static org.kiwix.kiwixmobile.utils.files.FileUtils.getCurrentSize;
 
 public class DownloadService extends Service {
@@ -90,6 +91,7 @@ public class DownloadService extends Service {
   public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
   public static final Object pauseLock = new Object();
   // 1024 / 100
+  private static final int GENERATE_NOTI_PENDING_INTENT_ID=1;
   private static final double BOOK_SIZE_OFFSET = 10.24;
   private static final String KIWIX_TAG = "kiwixdownloadservice";
   public static String KIWIX_ROOT;
@@ -98,6 +100,7 @@ public class DownloadService extends Service {
   private static DownloadFragment downloadFragment;
   private final IBinder mBinder = new LocalBinder();
   public String notificationTitle;
+  public String notificationTitle2;
   public SparseIntArray downloadStatus = new SparseIntArray();
   public SparseIntArray downloadProgress = new SparseIntArray();
   public SparseIntArray timeRemaining = new SparseIntArray();
@@ -130,7 +133,7 @@ public class DownloadService extends Service {
     KIWIX_ROOT = checkWritable(KIWIX_ROOT);
 
     createOngoingDownloadChannel();
-
+    downloadedNotificationChannel();
     super.onCreate();
   }
 
@@ -168,6 +171,7 @@ public class DownloadService extends Service {
     Log.d(KIWIX_TAG, "Using KIWIX_ROOT: " + KIWIX_ROOT);
 
     notificationTitle = intent.getExtras().getString(DownloadIntent.DOWNLOAD_ZIM_TITLE);
+
     LibraryNetworkEntity.Book book =
         (LibraryNetworkEntity.Book) intent.getSerializableExtra(EXTRA_BOOK);
     int notificationID = book.getId().hashCode();
@@ -340,6 +344,7 @@ public class DownloadService extends Service {
                       R.string.zim_file_downloaded));
               notification.get(notificationID)
                   .setContentText(getString(R.string.zim_file_downloaded));
+
               final Intent target = new Intent(DownloadService.this, MainActivity.class);
               target.putExtra(EXTRA_ZIM_FILE,
                   KIWIX_ROOT + StorageUtils.getFileNameFromUrl(book.getUrl()));
@@ -376,6 +381,7 @@ public class DownloadService extends Service {
               PendingIntent pendingIntent = PendingIntent.getActivity
                   (getBaseContext(), 0,
                       target, PendingIntent.FLAG_CANCEL_CURRENT);
+              downloadNotificationSetup(notificationID,pendingIntent);
               book.downloaded = true;
               dataSource.deleteBook(book)
                   .subscribe(new CompletableObserver() {
@@ -690,6 +696,39 @@ public class DownloadService extends Service {
           NOTIFICATION_SERVICE);
       notificationManager.createNotificationChannel(ongoingDownloadsChannel);
     }
+  }
+  private void downloadedNotificationChannel() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      CharSequence name = getString(R.string.successful_download_channel_name);
+      String description = getString(R.string.success_download_channel_desc);
+      int importance = NotificationManager.IMPORTANCE_DEFAULT;
+      NotificationChannel successfulDownloadsChannel = new NotificationChannel(
+          Constants.SUCCESSFUL_DOWNLOAD_CHANNEL_ID, name, importance);
+      successfulDownloadsChannel.setDescription(description);
+      successfulDownloadsChannel.setSound(null, null);
+      NotificationManager notificationManager = (NotificationManager) getSystemService(
+          NOTIFICATION_SERVICE);
+      notificationManager.createNotificationChannel(successfulDownloadsChannel);
+    }
+  }
+
+  private void downloadNotificationSetup(int notiId, PendingIntent pendingIntent)
+  {
+Log.v("DANG","1");
+    Intent startIntent = new Intent(this,MainActivity.class);
+
+    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,SUCCESSFUL_DOWNLOAD_CHANNEL_ID)
+            .setContentTitle("Amraoha Walay")
+            .setSmallIcon(R.drawable.kiwix_notification)
+            .setColor(Color.BLACK)
+            .setContentText("Such a dang dang dang dang dang son son son son son son")
+            .setContentIntent(PendingIntent.getActivity(this,GENERATE_NOTI_PENDING_INTENT_ID,startIntent,PendingIntent.FLAG_UPDATE_CURRENT))
+            .setAutoCancel(true);
+    if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.JELLY_BEAN&&Build.VERSION.SDK_INT<Build.VERSION_CODES.O)
+      notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+    Log.v("DANG","2");
+      notificationManager.notify(notiId,notificationBuilder.build());
+    Log.v("DANG","3");
   }
 
   @Override

@@ -176,6 +176,8 @@
   <string name="no_items_msg">No items available</string>
   <string name="ongoing_download_channel_name">Ongoing Downloads</string>
   <string name="ongoing_download_channel_desc">Category for ongoing zim file downloads.</string>
+  <string name="successful_download_channel_name">Successful Downloads</string>
+  <string name="success_download_channel_desc">Content downloaded successfully.</string>
   <string name="crash_title">Well… This is Embarrassing</string>
   <string name="crash_description">It looks like we crashed.\n\nWould you mind helping us fix this problem by sending the following information?</string>
   <string name="crash_checkbox_language">Your Language Settings</string>
