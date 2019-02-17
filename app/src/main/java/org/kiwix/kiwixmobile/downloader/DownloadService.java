@@ -33,6 +33,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import android.view.View;
 import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import io.reactivex.CompletableObserver;
@@ -91,7 +92,7 @@ public class DownloadService extends Service {
   public static final String NOTIFICATION_ID = "NOTIFICATION_ID";
   public static final Object pauseLock = new Object();
   // 1024 / 100
-  private static final int GENERATE_NOTI_PENDING_INTENT_ID=1;
+  private static final int GENERATE_NOTI_PENDING_INTENT_ID = 1;
   private static final double BOOK_SIZE_OFFSET = 10.24;
   private static final String KIWIX_TAG = "kiwixdownloadservice";
   public static String KIWIX_ROOT;
@@ -100,7 +101,6 @@ public class DownloadService extends Service {
   private static DownloadFragment downloadFragment;
   private final IBinder mBinder = new LocalBinder();
   public String notificationTitle;
-  public String notificationTitle2;
   public SparseIntArray downloadStatus = new SparseIntArray();
   public SparseIntArray downloadProgress = new SparseIntArray();
   public SparseIntArray timeRemaining = new SparseIntArray();
@@ -337,21 +337,19 @@ public class DownloadService extends Service {
 
           @Override
           public void onNext(Integer progress) {
+            String nn;
             if (progress == 100) {
-              notification.get(notificationID).setOngoing(false);
-              notification.get(notificationID)
-                  .setContentTitle(notificationTitle + " " + getResources().getString(
-                      R.string.zim_file_downloaded));
-              notification.get(notificationID)
-                  .setContentText(getString(R.string.zim_file_downloaded));
 
+              notificationManager.cancel(notificationID);
               final Intent target = new Intent(DownloadService.this, MainActivity.class);
               target.putExtra(EXTRA_ZIM_FILE,
                   KIWIX_ROOT + StorageUtils.getFileNameFromUrl(book.getUrl()));
               //Remove the extra ".part" from files
               String filename = book.file.getPath();
               if (filename.endsWith(ZIM_EXTENSION)) {
-                filename = filename + PART;
+                {
+                  filename = filename + PART;
+                }
                 File partFile = new File(filename);
                 if (partFile.exists()) {
                   partFile.renameTo(new File(partFile.getPath().replaceAll(".part", "")));
@@ -381,7 +379,7 @@ public class DownloadService extends Service {
               PendingIntent pendingIntent = PendingIntent.getActivity
                   (getBaseContext(), 0,
                       target, PendingIntent.FLAG_CANCEL_CURRENT);
-              downloadNotificationSetup(notificationID,pendingIntent);
+              downloadNotificationSetup(notificationTitle, pendingIntent);
               book.downloaded = true;
               dataSource.deleteBook(book)
                   .subscribe(new CompletableObserver() {
@@ -400,8 +398,6 @@ public class DownloadService extends Service {
                       Log.e("DownloadService", "Unable to delete book", e);
                     }
                   });
-              notification.get(notificationID).setContentIntent(pendingIntent);
-              notification.get(notificationID).mActions.clear();
               TestingUtils.unbindResource(DownloadService.class);
             }
             notification.get(notificationID).setProgress(100, progress, false);
@@ -411,13 +407,13 @@ public class DownloadService extends Service {
                       DownloadFragment.toHumanReadableTime(timeRemaining.get(notificationID)));
             }
             notificationManager.notify(notificationID, notification.get(notificationID).build());
-            if (progress == 0 || progress == 100) {
+            if (progress == 0) {
               // Tells android to not kill the service
               updateForeground();
             }
             updateDownloadFragmentProgress(progress, notificationID);
             if (progress == 100) {
-              stopSelf();
+              cancelNotification(notificationID);
             }
           }
 
@@ -697,6 +693,7 @@ public class DownloadService extends Service {
       notificationManager.createNotificationChannel(ongoingDownloadsChannel);
     }
   }
+
   private void downloadedNotificationChannel() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       CharSequence name = getString(R.string.successful_download_channel_name);
@@ -712,23 +709,22 @@ public class DownloadService extends Service {
     }
   }
 
-  private void downloadNotificationSetup(int notiId, PendingIntent pendingIntent)
-  {
-Log.v("DANG","1");
-    Intent startIntent = new Intent(this,MainActivity.class);
+  private void downloadNotificationSetup(String title, PendingIntent pendingIntent) {
+    int notiId = 5001;
 
-    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,SUCCESSFUL_DOWNLOAD_CHANNEL_ID)
-            .setContentTitle("Amraoha Walay")
+    NotificationCompat.Builder notificationBuilder =
+        new NotificationCompat.Builder(this, SUCCESSFUL_DOWNLOAD_CHANNEL_ID)
+            .setContentTitle(title + " Downloaded")
             .setSmallIcon(R.drawable.kiwix_notification)
             .setColor(Color.BLACK)
-            .setContentText("Such a dang dang dang dang dang son son son son son son")
-            .setContentIntent(PendingIntent.getActivity(this,GENERATE_NOTI_PENDING_INTENT_ID,startIntent,PendingIntent.FLAG_UPDATE_CURRENT))
+            .setContentText("You have successfully downloaded " + title)
+            .setContentIntent(pendingIntent)
             .setAutoCancel(true);
-    if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.JELLY_BEAN&&Build.VERSION.SDK_INT<Build.VERSION_CODES.O)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
+        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
-    Log.v("DANG","2");
-      notificationManager.notify(notiId,notificationBuilder.build());
-    Log.v("DANG","3");
+    }
+    notificationManager.notify(notiId, notificationBuilder.build());
   }
 
   @Override
