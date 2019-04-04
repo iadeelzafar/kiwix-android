@@ -90,7 +90,7 @@ public class ZimManageActivity extends BaseActivity implements ZimManageViewCall
     // Set up the ViewPager with the sections adapter.
     mViewPager = findViewById(R.id.container);
     mViewPager.setAdapter(mSectionsPagerAdapter);
-    mViewPager.setOffscreenPageLimit(2);
+    mViewPager.setOffscreenPageLimit(3);
 
     TabLayout tabLayout = findViewById(R.id.tabs);
     tabLayout.setupWithViewPager(mViewPager);
@@ -154,6 +154,9 @@ public class ZimManageActivity extends BaseActivity implements ZimManageViewCall
       case 2:
         searchItem.setVisible(false);
         languageItem.setVisible(false);
+      case 3:
+        searchItem.setVisible(true);
+            languageItem.setVisible(true);
         break;
     }
   }
