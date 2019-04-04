@@ -154,6 +154,8 @@
   <string name="previous">Previous</string>
   <string name="wifi_only_title">Allow downloading content via mobile network?</string>
   <string name="wifi_only_msg">If you choose "Yes" you won\'t be warned in future. However, you can always change this in Settings</string>
+  <string name="files_hosted_success">Files hosted successfully</string>
+  <string name="files_hosted_success_msg">You can now access kiwix-server from any device over the same network at: https://192.168.0.107:8000</string>
   <string name="pref_wifi_only">Download content only via WiFi</string>
   <string name="time_day">day</string>
   <string name="time_hour">h</string>
@@ -197,6 +199,7 @@
   <string name="get_started">Get started</string>
   <string name="find_offline_books_and_enjoy_reading">Find offline books and enjoy reading.</string>
   <string name="download_books">Download books</string>
+  <string name="server_running">Server running</string>
   <string name="human_kind_knowledge">Human kind\'s knowledge, on your phone.</string>
   <string name="welcome_to_the_family">Welcome to the family</string>
   <string name="save_books_offline">Save books offline</string>

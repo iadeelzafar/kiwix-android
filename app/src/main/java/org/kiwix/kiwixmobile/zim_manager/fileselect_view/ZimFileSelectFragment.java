@@ -243,7 +243,13 @@ public class ZimFileSelectFragment extends BaseFragment
 
             mode.finish(); // Action performed, so close CAB
             return true;
-
+          case R.id.zim_file_host_item:
+            new android.app.AlertDialog.Builder(getContext())
+                .setTitle(R.string.files_hosted_success)
+                .setMessage(R.string.files_hosted_success_msg)
+                .setPositiveButton("OK", (dialog, i) -> {
+                })
+                .show();
           default:
             return false;
         }

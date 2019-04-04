@@ -162,6 +162,7 @@ public class MainActivity extends BaseActivity implements WebViewCallback,
   ConstraintLayout root;
   @BindView(R.id.activity_main_toolbar)
   Toolbar toolbar;
+
   @BindView(R.id.activity_main_back_to_top_fab)
   FloatingActionButton backToTopButton;
   @BindView(R.id.activity_main_button_stop_tts)
@@ -341,6 +342,19 @@ public class MainActivity extends BaseActivity implements WebViewCallback,
         tableDrawerRightContainer.getHeaderView(0).findViewById(R.id.right_drawer_list);
 
     checkForRateDialog();
+
+    //serverButton.setOnClickListener(new View.OnClickListener() {
+    //  @Override public void onClick(View v) {
+    //    new android.app.AlertDialog.Builder(getApplicationContext())
+    //        .setTitle(R.string.server_running)
+    //        .setMessage(R.string.files_hosted_success_msg)
+    //        .setPositiveButton("OK", (dialog, i) -> {
+    //        })
+    //        .setNegativeButton("STOP SERVER", (dialog, i) -> {
+    //        })
+    //        .show();
+    //  }
+    //});
 
     initPlayStoreUri();
     isHideToolbar = sharedPreferenceUtil.getPrefHideToolbar();
