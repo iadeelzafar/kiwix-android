@@ -80,6 +80,12 @@
       app:showAsAction="never"/>
 
   <item
+      android:id="@+id/menu_start_server"
+      android:title="@string/menu_start_server"
+      android:visible="false"
+      app:showAsAction="never"/>
+
+  <item
       android:id="@+id/menu_help"
       android:title="@string/menu_help"
       app:showAsAction="never"/>
