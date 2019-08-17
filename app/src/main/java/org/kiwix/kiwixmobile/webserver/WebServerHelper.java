@@ -39,7 +39,7 @@ public class WebServerHelper {
     ip = ip.replaceAll("\n", "");
     if (ip.length() == 0) {
       zimHostCallbacks.onServerFailedToStart();
-    } else if (!isServerStarted && startAndroidWebServer(selectedBooksPath)) {
+    } else if (startAndroidWebServer(selectedBooksPath)) {
       zimHostCallbacks.onServerStarted("http://" + ip + ":" + port);
     }
     return isServerStarted;
@@ -53,6 +53,11 @@ public class WebServerHelper {
       return true;
     }
     return false;
+  }
+
+  public void stopKiwixServer()
+  {
+    kiwixServer.stop();
   }
 
   private boolean startAndroidWebServer(ArrayList<String> selectedBooksPath) {

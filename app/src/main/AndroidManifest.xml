@@ -234,6 +234,12 @@
         <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
       </intent-filter>
     </receiver>
+
+    <receiver android:name=".WifiApmReceiver">
+      <intent-filter>
+        <action android:name="android.net.wifi.WIFI_AP_STATE_CHANGED" />
+      </intent-filter>
+    </receiver>
   </application>
 
 </manifest>

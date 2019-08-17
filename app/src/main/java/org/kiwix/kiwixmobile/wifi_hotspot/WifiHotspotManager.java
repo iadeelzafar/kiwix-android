@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import org.kiwix.kiwixmobile.webserver.ZimHostCallbacks;
 
+import static org.kiwix.kiwixmobile.webserver.WebServerHelper.isServerStarted;
+
 /**
  * WifiHotstopManager class makes use of the Android's WifiManager and WifiConfiguration class
  * to implement the wifi hotspot feature.
@@ -73,7 +75,11 @@ public class WifiHotspotManager {
   //This method checks the state of the hostpot for devices>=Oreo
   @RequiresApi(api = Build.VERSION_CODES.O)
   public boolean checkHotspotState() {
-    return hotspotReservation != null;
+    if (!isServerStarted) {
+      return false;
+    } else {
+      return hotspotReservation != null;
+    }
   }
 
   void printCurrentConfig(WifiConfiguration wifiConfiguration) {

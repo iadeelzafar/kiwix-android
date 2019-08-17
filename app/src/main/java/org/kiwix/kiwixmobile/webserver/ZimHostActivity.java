@@ -1,16 +1,20 @@
 package org.kiwix.kiwixmobile.webserver;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -37,6 +41,7 @@ import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.Task;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +52,7 @@ import org.kiwix.kiwixmobile.R;
 import org.kiwix.kiwixmobile.base.BaseActivity;
 import org.kiwix.kiwixmobile.utils.AlertDialogShower;
 import org.kiwix.kiwixmobile.utils.KiwixDialog;
+import org.kiwix.kiwixmobile.utils.NetworkUtils;
 import org.kiwix.kiwixmobile.wifi_hotspot.HotspotService;
 import org.kiwix.kiwixmobile.zim_manager.fileselect_view.SelectionMode;
 import org.kiwix.kiwixmobile.zim_manager.fileselect_view.adapter.BookOnDiskDelegate;
@@ -99,12 +105,33 @@ public class ZimHostActivity extends BaseActivity implements
 
     setUpToolbar();
 
+     final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+        if ("android.net.wifi.WIFI_AP_STATE_CHANGED".equals(action)) {
+
+          // get Wi-Fi Hotspot state here
+          int state = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0);
+
+          if (WifiManager.WIFI_STATE_ENABLED == state % 10) {
+            Log.v("DANG","Intent filter : Hotspot enabled");
+          }
+          else
+          {
+            Log.v("DANG","Intent filter : Hotspot disabled");
+          }
+
+        }
+      }
+    };
+
+    IntentFilter mIntentFilter = new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGED");
+    registerReceiver(mReceiver, mIntentFilter);
+
     if (savedInstanceState != null) {
       ip = savedInstanceState.getString(IP_STATE_KEY);
-      serverTextView.setText(
-          getString(R.string.server_started_message, ip));
-      startServerButton.setText(getString(R.string.stop_server_label));
-      startServerButton.setBackgroundColor(getResources().getColor(R.color.stopServer));
+      layoutServerStarted();
     }
     BookOnDiskDelegate.BookDelegate bookDelegate =
         new BookOnDiskDelegate.BookDelegate(sharedPreferenceUtil,
@@ -175,6 +202,19 @@ public class ZimHostActivity extends BaseActivity implements
     }
   }
 
+  void layoutServerStarted() {
+    serverTextView.setText(
+        getString(R.string.server_started_message, ip));
+    startServerButton.setText(getString(R.string.stop_server_label));
+    startServerButton.setBackgroundColor(getResources().getColor(R.color.stopServer));
+  }
+
+  void layoutServerStopped() {
+    serverTextView.setText(getString(R.string.server_textview_default_message));
+    startServerButton.setText(getString(R.string.start_server_label));
+    startServerButton.setBackgroundColor(getResources().getColor(R.color.greenTick));
+  }
+
   private void getSelectedBooksPath() {
     BooksOnDiskListItem.BookOnDisk bookOnDisk;
 
@@ -241,16 +281,67 @@ public class ZimHostActivity extends BaseActivity implements
     }
   }
 
-  @Override protected void onResume() {
+  @SuppressLint("PrivateApi") @Override protected void onResume() {
     super.onResume();
     presenter.loadBooks();
-    if (isServerStarted) {
-      ip = getAddress();
-      ip = ip.replaceAll("\n", "");
-      serverTextView.setText(getString(R.string.server_started_message, ip));
-      startServerButton.setText(getString(R.string.stop_server_label));
-      startServerButton.setBackgroundColor(getResources().getColor(R.color.stopServer));
+
+    WifiManager wifiManager =
+        (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+    Method method = null;
+    try {
+      method = wifiManager.getClass().getDeclaredMethod("getWifiApState");
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
     }
+    method.setAccessible(true);
+    try {
+      int actualState = (Integer) method.invoke(wifiManager, (Object[]) null);
+      if(actualState ==13)
+        Log.v("DANG","Reflection hotspot enabled");
+      else if(actualState==11)
+        Log.v("DANG","Reflection hotspot disabled");
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    } catch (InvocationTargetException e) {
+      e.printStackTrace();
+    }
+
+    ip = getAddress();
+    ip = ip.replaceAll("\n", "");
+
+    //If wifi is enabled
+    if (NetworkUtils.isWiFi(this)) {
+      Log.v("DANG", "1");
+      layoutServerStopped();
+      isServerStarted = false;
+      if(hotspotService!=null)
+      {
+        Log.v("DANG","1.5");
+        hotspotService.stopWebServerHelper();
+      }
+    }
+
+    //Check if hotspot is enabled
+    //If var has ip address apart from port no. and other chars
+    else if (ip.length() > 13) {
+      Log.v("DANG", "2.1");
+      if (isServerStarted) {
+        Log.v("DANG", "2.2");
+        layoutServerStarted();
+      }
+    }
+    //Neither hotspot nor WIFI is enabled
+    else {
+      Log.v("DANG", "3");
+      layoutServerStopped();
+      isServerStarted = false;
+      if(hotspotService!=null)
+      {
+        hotspotService.stopWebServerHelper();
+      }
+    }
+
+
   }
 
   // This method checks if mobile data is enabled in user's device.
@@ -435,16 +526,12 @@ public class ZimHostActivity extends BaseActivity implements
 
   @Override public void onServerStarted(@NonNull String ip) {
     this.ip = ip;
-    serverTextView.setText(getString(R.string.server_started_message, this.ip));
-    startServerButton.setText(getString(R.string.stop_server_label));
-    startServerButton.setBackgroundColor(getResources().getColor(R.color.stopServer));
+    layoutServerStarted();
     isServerStarted = true;
   }
 
   @Override public void onServerStopped() {
-    serverTextView.setText(getString(R.string.server_textview_default_message));
-    startServerButton.setText(getString(R.string.start_server_label));
-    startServerButton.setBackgroundColor(getResources().getColor(R.color.greenTick));
+    layoutServerStopped();
     isServerStarted = false;
   }
 

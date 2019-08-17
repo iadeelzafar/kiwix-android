@@ -186,6 +186,11 @@ public class HotspotService extends Service {
         buildForegroundNotification(getString(R.string.hotspot_running)));
   }
 
+  public void stopWebServerHelper()
+  {
+    webServerHelper.stopKiwixServer();
+  }
+
   public class HotspotBinder extends Binder {
 
     @NonNull public HotspotService getService() {
