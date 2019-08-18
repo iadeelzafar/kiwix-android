@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import org.kiwix.kiwixmobile.KiwixApplication;
 import org.kiwix.kiwixmobile.R;
 import org.kiwix.kiwixmobile.utils.Constants;
 import org.kiwix.kiwixmobile.webserver.ZimHostCallbacks;
@@ -48,7 +49,7 @@ public class HotspotService extends Service {
   private WebServerHelper webServerHelper;
 
   @Override public void onCreate() {
-
+    KiwixApplication.getComponent().serviceComponent.service(this).build().inject(this
     super.onCreate();
 
     hotspotManager = new WifiHotspotManager(this);

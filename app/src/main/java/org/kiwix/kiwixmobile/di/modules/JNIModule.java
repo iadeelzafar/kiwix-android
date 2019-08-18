@@ -23,6 +23,8 @@ import dagger.Module;
 import dagger.Provides;
 import javax.inject.Singleton;
 import org.kiwix.kiwixlib.JNIKiwix;
+import org.kiwix.kiwixlib.JNIKiwixLibrary;
+import org.kiwix.kiwixlib.JNIKiwixServer;
 
 /**
  * Created by mhutti1 on 14/04/17.
@@ -33,5 +35,17 @@ import org.kiwix.kiwixlib.JNIKiwix;
   @Singleton
   public JNIKiwix providesJNIKiwix(@NonNull Context context) {
     return new JNIKiwix(context);
+  }
+
+  @Provides
+  @Singleton
+  public JNIKiwixLibrary providesJNIKiwixLibrary() {
+    return new JNIKiwixLibrary();
+  }
+
+  @Provides
+  @Singleton
+  public JNIKiwixServer providesJNIKiwixServer(JNIKiwixLibrary jniKiwixLibrary) {
+    return new JNIKiwixServer(jniKiwixLibrary);
   }
 }

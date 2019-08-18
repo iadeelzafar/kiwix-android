@@ -26,6 +26,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.multidex.MultiDexApplication;
 import com.jakewharton.threetenabp.AndroidThreeTen;
+import dagger.Component;
 import dagger.android.AndroidInjector;
 import dagger.android.DispatchingAndroidInjector;
 import dagger.android.HasActivityInjector;
@@ -39,6 +40,7 @@ public class KiwixApplication extends MultiDexApplication implements HasActivity
 
   private static KiwixApplication application;
   private static ApplicationComponent applicationComponent;
+  private static Component component;
 
   static {
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -56,6 +58,10 @@ public class KiwixApplication extends MultiDexApplication implements HasActivity
     return applicationComponent;
   }
 
+  public static Component getComponent()
+  {
+  }
+
   public static void setApplicationComponent(ApplicationComponent applicationComponent) {
     KiwixApplication.applicationComponent = applicationComponent;
   }
@@ -67,6 +73,7 @@ public class KiwixApplication extends MultiDexApplication implements HasActivity
     setApplicationComponent(DaggerApplicationComponent.builder()
         .context(this)
         .build());
+    setComponent(Component)
   }
 
   @Override

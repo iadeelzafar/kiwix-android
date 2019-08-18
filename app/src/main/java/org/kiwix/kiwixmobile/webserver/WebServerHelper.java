@@ -7,6 +7,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import javax.inject.Inject;
 import org.kiwix.kiwixlib.JNIKiwixException;
 import org.kiwix.kiwixlib.JNIKiwixLibrary;
 import org.kiwix.kiwixlib.JNIKiwixServer;
@@ -18,15 +19,23 @@ import org.kiwix.kiwixlib.JNIKiwixServer;
  */
 
 public class WebServerHelper {
+
+  //@Inject
+  //JNIKiwixLibrary kiwixLibrary;
+  //
+  //@Inject
+  //JNIKiwixServer kiwixServer;
+
   public static boolean isServerStarted;
   private static int port;
   private final int DEFAULT_PORT = 8080;
-  private final JNIKiwixLibrary kiwixLibrary = new JNIKiwixLibrary();
-  private final JNIKiwixServer kiwixServer = new JNIKiwixServer(kiwixLibrary);
+  private JNIKiwixLibrary kiwixLibrary;
+  private JNIKiwixServer kiwixServer;
   private static final String TAG = "WebServerHelper";
 
-  public WebServerHelper() {
-
+  @Inject public WebServerHelper(JNIKiwixLibrary kiwixLibrary,JNIKiwixServer kiwixServer) {
+    this.kiwixLibrary = kiwixLibrary;
+    this.kiwixServer = kiwixServer;
   }
 
   public boolean startServerHelper(@NonNull ArrayList<String> selectedBooksPath) {
